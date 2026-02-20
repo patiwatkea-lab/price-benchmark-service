@@ -1,0 +1,37 @@
+name: Auto Price Update
+
+# ส่วนที่ 1: กำหนดว่าหุ่นยนต์จะเริ่มทำงานเมื่อไหร่
+on:
+  schedule:
+    - cron: '0 0 * * *' # รันทุกเที่ยงคืนตามเวลา UTC (ประมาณ 7 โมงเช้าเวลาไทย)
+  workflow_dispatch:    # บรรทัดนี้จะเพิ่มปุ่ม "Run workflow" ให้เรากดรันเองได้เพื่อทดสอบ
+
+# ส่วนที่ 2: งานที่หุ่นยนต์ต้องทำ
+jobs:
+  build:
+    runs-on: ubuntu-latest # ใช้ระบบปฏิบัติการ Linux ของ GitHub
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3 # ดึงโค้ดจาก Repo ของเราออกมา
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9' # ติดตั้ง Python เวอร์ชัน 3.9
+
+      - name: Install dependencies
+        run: |
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          # ติดตั้ง Library ที่ต้องใช้จากไฟล์ requirements.txt
+
+      - name: Run calculation
+        run: python main.py # สั่งรันสคริปต์ที่เราเขียนไว้ในขั้นตอนที่แล้ว
+
+      - name: Commit and Push
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add data/results.json
+          git commit -m "Update price scores $(date)" || exit 0
+          git push
+          # นำไฟล์ results.json ที่คำนวณเสร็จแล้ว อัปโหลดกลับขึ้น GitHub
