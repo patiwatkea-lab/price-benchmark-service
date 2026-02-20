@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>Price Benchmarking Service</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/picnic"> <style>
+        .container { padding: 50px; }
+        .best-deal { background: #e6fffa; border: 2px solid #38b2ac; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Price Analysis Engine</h1>
+        <p>วิเคราะห์ความคุ้มค่าด้วย Algorithm ลับ Version: <span id="ver">...</span></p>
+        
+        <table id="priceTable">
+            <thead>
+                <tr>
+                    <th>Shop Name</th>
+                    <th>Price</th>
+                    <th>Secret Score</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="data-body">
+                </tbody>
+        </table>
+    </div>
+
+    <script>
+        // ฟังก์ชันดึงข้อมูลจากไฟล์ JSON ที่หุ่นยนต์สร้างไว้
+        fetch('data/results.json')
+            .then(response => response.json())
+            .then(data => {
+                const tbody = document.getElementById('data-body');
+                document.getElementById('ver').innerText = data[0].engine_v;
+
+                // เรียงลำดับคะแนนจากมากไปน้อย
+                data.sort((a, b) => b.score - a.score);
+
+                data.forEach((item, index) => {
+                    const row = `
+                        <tr class="${index === 0 ? 'best-deal' : ''}">
+                            <td>${item.shop}</td>
+                            <td>${item.price.toLocaleString()} THB</td>
+                            <td><b>${item.score}</b></td>
+                            <td>${index === 0 ? '⭐ Best Value' : 'Normal'}</td>
+                        </tr>`;
+                    tbody.innerHTML += row;
+                });
+            });
+    </script>
+</body>
+</html>
